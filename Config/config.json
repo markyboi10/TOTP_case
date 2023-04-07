@@ -1,5 +1,5 @@
 {
-  "password-file":"passwd.json",
+  "password-file":"Config/passwd.json",
   "port":5000,
   "keystore-file":"keystore.jks",
   "keystore-pass":"test12345"
