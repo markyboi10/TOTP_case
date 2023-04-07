@@ -3,6 +3,7 @@ package client;
 import ClientConfig.Config;
 import ClientConfig.Host;
 import Comm.Comm;
+import java.io.Console;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -12,6 +13,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Objects;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -20,6 +22,7 @@ import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
+import packets.CreateChallenge;
 
 
 
@@ -111,7 +114,7 @@ public class Client {
         } else if (service.equalsIgnoreCase("create")) {
             // to do
             System.out.println("Running Create");
-            Authn();
+            Create();
         } else {
             System.out.println("Service not found with name [" + service + "]. Closing program ");
             System.exit(0);
@@ -145,5 +148,36 @@ public class Client {
         return AuthnStatus;
 
         }
+        
+            
+        private static boolean Create() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
+
+        Host host = getHost("create");
+        boolean AuthnStatus = false;
+            
+        // MESSAGE 1
+        AuthnHello hello = new AuthnHello(user, "create"); // Construct the packet
+        System.out.println("Sending hello packet");
+        Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
+        
+        System.out.println("reading packet");
+        // MESSAGE 2
+        CreateChallenge createChallenge_Packet = (CreateChallenge) Comm.read(peer1); // 
+        String receivedcreatePassRequest = createChallenge_Packet.getcreatePassRequest();
+        System.out.println(receivedcreatePassRequest);
+        // MESSAGE 3
+        // Client plain text password
+        Console console = System.console();
+        pw = new String(console.readPassword("Create your Password: "));
+
+        System.out.println("The password: " + pw);
+        System.out.println("Password Created");
+//        CHAPResponse response = new CHAPResponse(Base64.getEncoder().encodeToString(combined));
+//        Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), response);
+        
+        return AuthnStatus;
+
+        }
+
 
 }
