@@ -29,10 +29,13 @@ public class Server {
     private static ServerSocket server;
     private static Config config;
     private static PasswordConfig passwordConfig;
-    public static ArrayList<Password> secrets = new ArrayList<>();
+    public static ArrayList<Password> passwd = new ArrayList<>();
 
     /**
      * @param args the command line arguments
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.InvalidObjectException
+     * @throws java.security.NoSuchAlgorithmException
      */
     public static void main(String[] args) throws FileNotFoundException, InvalidObjectException, IOException, NoSuchAlgorithmException {
         OptionParser op = new OptionParser(args);
@@ -55,7 +58,6 @@ public class Server {
             // Initialize config
             config = new Config(opt.getSecond());
             // Initialize the Secrets config from the path "secrets_file" of config.
-            System.out.println(config.getPassword_file());
             passwordConfig = new PasswordConfig(config.getPassword_file());
         }
 
@@ -63,21 +65,13 @@ public class Server {
             // Initializie the server with the config port
             server = new ServerSocket(config.getPort());
             
-            System.out.println("SERVER PORT NUM: " + config.getPort());
-            
             // Accept packets & communicate
             poll();
 
             // Close the socket when polling is completed or an error is thrown.
             server.close();
 
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            server.close();
-            System.out.println("Server IOException error, closing down.");
-            System.exit(0);
-        } catch (NoSuchMethodException ex) {
-            ex.printStackTrace();
+        } catch (IOException | NoSuchMethodException ioe) {
             server.close();
             System.out.println("Server IOException error, closing down.");
             System.exit(0);
@@ -92,29 +86,36 @@ public class Server {
             // Establish the connection & read the message
             Socket peer = server.accept();
 
-            // Determine the packet type.
-            System.out.println("Waiting for a packet...");
+            // Determine the packet type
             final Packet packet = Comm.read(peer);
 
             System.out.println("Packet Recieved: [" + packet.getType().name() + "]");
             
             
-
+            String create = "create";
+            String authenticate = "authenticate";
             // Switch statement only goes over packets expected by the KDC, any other packet will be ignored.
             switch (packet.getType()) {
 
                 case AuthnHello: {
-                    // Check if the user exists in the secretes && send a challenge back.
+                    // Check if the user exists in the secretes, if they do, they exist there we authencticate
                     AuthnHello AuthnHello_packet = (AuthnHello) packet;
-                    System.out.println("PACKET UNAME: " + AuthnHello_packet);
-                    System.out.println("Entries UNAME: " + secrets);
-                    if (secrets.stream().anyMatch(n -> n.getUser().equalsIgnoreCase(AuthnHello_packet.getuName()))) {
+                  
+                    if (passwd.stream().anyMatch(n -> n.getUser().equalsIgnoreCase(AuthnHello_packet.getuName())) && authenticate.equalsIgnoreCase(AuthnHello_packet.getAccType())) {
 
+                        System.out.println("Authn_packet received, here is the type: " + AuthnHello_packet.getAccType());
                         System.out.println("Authn_packet received, here is the username: " + AuthnHello_packet.getuName());
 
                         // Create the packet and send
 //                        CHAPChallenge chapChallenge_packet = new CHAPChallenge(nonce);
 //                        Communication.send(peer, chapChallenge_packet);
+                    } else if (passwd.stream().noneMatch(n -> n.getUser().equalsIgnoreCase(AuthnHello_packet.getuName())) && create.equalsIgnoreCase(AuthnHello_packet.getAccType())){
+                        //user doesn't exist, we create
+                        System.out.println("Authn_packet received, here is the type: " + AuthnHello_packet.getAccType());
+                        System.out.println("Authn_packet received, here is the username: " + AuthnHello_packet.getuName());
+                    } else {
+                        System.out.println("Incorrect input");
+                        System.exit(0);
                     }
                 }; break;
             }

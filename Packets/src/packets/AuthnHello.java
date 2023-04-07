@@ -21,13 +21,20 @@ public class AuthnHello implements Packet, JSONSerializable {
     
     // Packet Data
     private String uName;
+    private String accType;
 
     /**
      * Default Constructor for a SessionKeyResponse
      * @param uName
+     * @param accType
      */
-    public AuthnHello(String uName) {
+    public AuthnHello(String uName, String accType) {
         this.uName = uName;
+        this.accType = accType;
+    }
+
+    public String getAccType() {
+        return accType;
     }
 
     public String getuName() {
@@ -73,6 +80,13 @@ public class AuthnHello implements Packet, JSONSerializable {
               this.uName = tmp.getString("user");
             else
               throw new InvalidObjectException("Expected an Ticket object -- uName expected.");
+            
+                        
+            if (tmp.containsKey("accType"))
+              this.accType = tmp.getString("accType");
+            else
+              throw new InvalidObjectException("Expected an Ticket object -- accType expected.");
+            
           }
           else 
             throw new InvalidObjectException("Expected a Ticket - Type JSONObject not found.");
@@ -87,6 +101,7 @@ public class AuthnHello implements Packet, JSONSerializable {
         JSONObject object = new JSONObject();
         object.put("packetType", PACKET_TYPE.toString());
         object.put("user", this.uName);
+        object.put("accType", this.accType);
 
         return object;
     }

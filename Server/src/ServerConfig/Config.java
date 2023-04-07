@@ -24,8 +24,6 @@ public class Config implements JSONSerializable {
     public Config(String path) throws FileNotFoundException, InvalidObjectException {
         this.path = path;
 
-        System.out.println("CONFIG PATH: " + path);
-
         // Construct file
         File file = new File(path);
 

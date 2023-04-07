@@ -136,7 +136,7 @@ public class Client {
         boolean AuthnStatus = false;
             
         // MESSAGE 1
-        AuthnHello hello = new AuthnHello(user); // Construct the packet
+        AuthnHello hello = new AuthnHello(user, "authenticate"); // Construct the packet
         System.out.println("Sending hello packet");
         Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
         
