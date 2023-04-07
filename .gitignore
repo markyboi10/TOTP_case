@@ -6,3 +6,5 @@
 /Server/build/
 /Client/build/
 /Client/dist/
+/Packets/dist/
+/Packets/build/

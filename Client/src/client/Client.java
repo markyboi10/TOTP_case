@@ -2,9 +2,11 @@ package client;
 
 import ClientConfig.Config;
 import ClientConfig.Host;
+import Comm.Comm;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InvalidObjectException;
+import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -17,6 +19,9 @@ import javax.crypto.NoSuchPaddingException;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
+import packets.AuthnHello;
+
+
 
 /**
  *
@@ -87,7 +92,9 @@ public class Client {
         if (service.equalsIgnoreCase("authenticate")) { // KDC --> EchoService
 
             System.out.println("Running Auth.");
-
+            
+            Authn();
+            
 //            // Runs the CHAP protocol
 //            // If chap returns true, run session key request
 //            if (CHAP()) {
@@ -104,6 +111,7 @@ public class Client {
         } else if (service.equalsIgnoreCase("create")) {
             // to do
             System.out.println("Running Create");
+            Authn();
         } else {
             System.out.println("Service not found with name [" + service + "]. Closing program ");
             System.exit(0);
@@ -111,6 +119,7 @@ public class Client {
 
     }
 
+    
     /**
      * Finds a host based off {@code host_name}
      *
@@ -119,5 +128,22 @@ public class Client {
     private static Host getHost(String host_name) {
         return hosts.stream().filter(n -> n.getService().equalsIgnoreCase(host_name)).findFirst().orElse(null);
     }
+
+    
+        private static boolean Authn() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
+
+        Host host = getHost("authenticate");
+        boolean AuthnStatus = false;
+            
+        // MESSAGE 1
+        AuthnHello hello = new AuthnHello(user); // Construct the packet
+        System.out.println("Sending hello packet");
+        Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
+        
+        
+        
+        return AuthnStatus;
+
+        }
 
 }

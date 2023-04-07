@@ -3,6 +3,7 @@ package ServerConfig;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InvalidObjectException;
+import merrimackutil.json.JSONSerializable;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
@@ -11,9 +12,10 @@ import merrimackutil.json.types.JSONType;
  *
  * @author Mark Case
  */
-public class Config {
+public class Config implements JSONSerializable {
 
     private String path;
+    
     private String password_file;
     private String keyStore_file;
     private String keystore_pass;
@@ -36,10 +38,12 @@ public class Config {
         deserialize(obj);
     }
 
+    @Override
     public String serialize() {
         return toJSONType().getFormattedJSON();// We should never be serializing the JSON.
     }
 
+    @Override
     public void deserialize(JSONType type) throws InvalidObjectException {
 
         JSONObject obj;
@@ -75,6 +79,7 @@ public class Config {
 
     }
 
+    @Override
     public JSONType toJSONType() {
         JSONObject obj = new JSONObject();
         obj.put("port", this.port);
