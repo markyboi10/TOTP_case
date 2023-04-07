@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ServerConfig;
 
 import java.io.InvalidObjectException;
@@ -13,6 +9,7 @@ import merrimackutil.json.types.JSONType;
  * @author Mark Case
  */
 public class Password {
+
     private String salt;
     private String pass;
     private String totp_key;
@@ -20,7 +17,7 @@ public class Password {
 
     public Password(JSONObject obj) throws InvalidObjectException {
         deserialize(obj); // Deserialize a host into this host object
-    }         
+    }
 
     public String serialize() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
@@ -83,7 +80,5 @@ public class Password {
         return user;
     }
 
-
 }
-
     

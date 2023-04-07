@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ServerConfig;
 
 import java.io.File;
@@ -16,25 +12,25 @@ import merrimackutil.json.types.JSONType;
  * @author Mark Case
  */
 public class Config {
-    
+
     private String path;
     private String password_file;
     private String keyStore_file;
     private String keystore_pass;
     private int port;
-    
+
     public Config(String path) throws FileNotFoundException, InvalidObjectException {
         this.path = path;
-        
+
         System.out.println("CONFIG PATH: " + path);
-        
+
         // Construct file
         File file = new File(path);
-        
-        if(file == null || !file.exists()) {
+
+        if (file == null || !file.exists()) {
             throw new FileNotFoundException("File from path for Config does not point to a vadlid configuration json file.");
         }
-        
+
         // Construct JSON Object and load configuration
         JSONObject obj = JsonIO.readObject(file);
         deserialize(obj);
@@ -45,29 +41,38 @@ public class Config {
     }
 
     public void deserialize(JSONType type) throws InvalidObjectException {
-        
+
         JSONObject obj;
-        if(type instanceof JSONObject) {
+        if (type instanceof JSONObject) {
             obj = (JSONObject) type;
-        } else { throw new InvalidObjectException("Expected Config Type - JsonObject. "); }
-        
-        if(obj.containsKey("password-file")) {
+        } else {
+            throw new InvalidObjectException("Expected Config Type - JsonObject. ");
+        }
+
+        if (obj.containsKey("password-file")) {
             this.password_file = obj.getString("password-file");
-        } else { throw new InvalidObjectException("Expected an Config object -- password-file expected."); }
-        
-        if(obj.containsKey("port")) {
+        } else {
+            throw new InvalidObjectException("Expected an Config object -- password-file expected.");
+        }
+
+        if (obj.containsKey("port")) {
             this.port = obj.getInt("port");
-        } else { throw new InvalidObjectException("Expected an Config object -- port expected."); }
-        
-        if(obj.containsKey("keystore-pass")) {
+        } else {
+            throw new InvalidObjectException("Expected an Config object -- port expected.");
+        }
+
+        if (obj.containsKey("keystore-pass")) {
             this.keystore_pass = obj.getString("keystore-pass");
-        } else { throw new InvalidObjectException("Expected an Config object -- keystore-pass expected."); }
-                
-        if(obj.containsKey("keystore-file")) {
+        } else {
+            throw new InvalidObjectException("Expected an Config object -- keystore-pass expected.");
+        }
+
+        if (obj.containsKey("keystore-file")) {
             this.keystore_pass = obj.getString("keystore-file");
-        } else { throw new InvalidObjectException("Expected an Config object -- keystore-file expected."); }
-         
-         
+        } else {
+            throw new InvalidObjectException("Expected an Config object -- keystore-file expected.");
+        }
+
     }
 
     public JSONType toJSONType() {
@@ -76,7 +81,7 @@ public class Config {
         obj.put("keystore-file", this.keyStore_file);
         obj.put("keystore-pass", this.keystore_pass);
         obj.put("password-file", this.password_file);
-        
+
         return obj; // We are never reading this file to JSON.
     }
 
@@ -100,6 +105,4 @@ public class Config {
         return port;
     }
 
-
-    
 }

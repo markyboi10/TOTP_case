@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package client;
 
 import ClientConfig.Config;
@@ -14,7 +10,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -28,16 +23,14 @@ import merrimackutil.util.Tuple;
  * @author Mark Case
  */
 public class Client {
-    
+
     public static ArrayList<Host> hosts = new ArrayList<>();
     private static Config config;
     private static String pw;
     private static String user;
     private static String service;
-    
-    public static void main(String[] args) throws NoSuchAlgorithmException, FileNotFoundException, InvalidObjectException, IOException, NoSuchMethodException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
 
-        System.out.println("args: " + Arrays.toString(args));
+    public static void main(String[] args) throws NoSuchAlgorithmException, FileNotFoundException, InvalidObjectException, IOException, NoSuchMethodException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
 
         // Initializing the CLI
         boolean shortlen = false;
@@ -77,7 +70,6 @@ public class Client {
             user = opt2.getSecond();
         } else if (Objects.equals(opt2.getFirst(), 's')) {
             service = opt2.getSecond();
-            System.out.println("SERVICE " + service);
             shortlen = true;
         }
 
@@ -90,12 +82,11 @@ public class Client {
                 service = opt3.getSecond();
             }
         }
-        
-        System.out.println("THE SERVICE IS" + service);
+
         // Check the service type and operate such.
         if (service.equalsIgnoreCase("authenticate")) { // KDC --> EchoService
 
-            System.out.println("Running Chap.");
+            System.out.println("Running Auth.");
 
 //            // Runs the CHAP protocol
 //            // If chap returns true, run session key request
@@ -110,7 +101,9 @@ public class Client {
 //            } else { // If chap returns false
 //                System.exit(0);
 //            }
-
+        } else if (service.equalsIgnoreCase("create")) {
+            // to do
+            System.out.println("Running Create");
         } else {
             System.out.println("Service not found with name [" + service + "]. Closing program ");
             System.exit(0);
@@ -126,5 +119,5 @@ public class Client {
     private static Host getHost(String host_name) {
         return hosts.stream().filter(n -> n.getService().equalsIgnoreCase(host_name)).findFirst().orElse(null);
     }
-    
+
 }

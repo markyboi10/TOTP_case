@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package server;
 
 import ServerConfig.Config;
@@ -29,7 +25,7 @@ public class Server {
     private static Config config;
     private static PasswordConfig passwordConfig;
     public static ArrayList<Password> entries = new ArrayList<>();
-    
+
     /**
      * @param args the command line arguments
      */
@@ -57,32 +53,33 @@ public class Server {
             System.out.println(config.getPassword_file());
             passwordConfig = new PasswordConfig(config.getPassword_file());
         }
-        
+
         try {
             // Initializie the server with the config port
             server = new ServerSocket(config.getPort());
 
             // Accept packets & communicate
             poll();
-
+            
             // Close the socket when polling is completed or an error is thrown.
             server.close();
 
         } catch (IOException ioe) {
             ioe.printStackTrace();
             server.close();
-            System.out.println("KDC Server IOException error, closing down.");
+            System.out.println("Server IOException error, closing down.");
             System.exit(0);
         } catch (NoSuchMethodException ex) {
             ex.printStackTrace();
             server.close();
-            System.out.println("KDC Server IOException error, closing down.");
+            System.out.println("Server IOException error, closing down.");
             System.exit(0);
         }
-        
+
     }
-    
-     private static void poll() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
+
+    private static void poll() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
+        System.out.println("Server running . . . ");
         while (true) { // Consistently accept connections
 
             // Establish the connection & read the message
@@ -99,6 +96,6 @@ public class Server {
 //            
 //            }
         }
-     }
+    }
 
 }
