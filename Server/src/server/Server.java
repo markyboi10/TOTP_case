@@ -18,6 +18,7 @@ import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
 import packets.CreateChallenge;
+import packets.CreateResponse;
 import packets.Packet;
 import static packets.PacketType.AuthnHello;
 
@@ -102,10 +103,7 @@ public class Server {
                     
                     // Check if the user exists in the secretes, if they do, they exist there we authencticate
                     AuthnHello AuthnHello_packet = (AuthnHello) packet;
-                  
-                    System.out.println("The packet type: ");
-                    
-                    
+                             
                     if (passwd.stream().anyMatch(n -> n.getUser().equalsIgnoreCase(AuthnHello_packet.getuName())) && authenticate.equalsIgnoreCase(AuthnHello_packet.getAccType())) {
 
                         System.out.println("Authn_packet received, here is the type: " + AuthnHello_packet.getAccType());
@@ -126,6 +124,16 @@ public class Server {
                         System.out.println("Incorrect input");
                         System.exit(0);
                     }
+                }; break;
+                
+                case CreateResponse: {
+                    
+                    CreateResponse createResponse_packet = (CreateResponse) packet;
+                    
+                    String clientPass = createResponse_packet.getclientPass();
+                    System.out.println("Received client pass: " + clientPass);
+                    
+                    
                 }; break;
             }
         }

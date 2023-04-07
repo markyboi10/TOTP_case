@@ -23,6 +23,7 @@ import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
 import packets.CreateChallenge;
+import packets.CreateResponse;
 
 
 
@@ -172,8 +173,9 @@ public class Client {
 
         System.out.println("The password: " + pw);
         System.out.println("Password Created");
-//        CHAPResponse response = new CHAPResponse(Base64.getEncoder().encodeToString(combined));
-//        Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), response);
+
+        CreateResponse createResponse_packet = new CreateResponse(pw);
+        Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
         
         return AuthnStatus;
 
