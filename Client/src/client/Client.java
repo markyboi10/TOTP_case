@@ -4,17 +4,127 @@
  */
 package client;
 
+import ClientConfig.Config;
+import ClientConfig.Host;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import merrimackutil.cli.LongOption;
+import merrimackutil.cli.OptionParser;
+import merrimackutil.util.Tuple;
+
 /**
  *
  * @author Mark Case
  */
 public class Client {
+    
+    public static ArrayList<Host> hosts = new ArrayList<>();
+    private static Config config;
+    private static String pw;
+    private static String user;
+    private static String service;
+    
+    public static void main(String[] args) throws NoSuchAlgorithmException, FileNotFoundException, InvalidObjectException, IOException, NoSuchMethodException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+
+        System.out.println("args: " + Arrays.toString(args));
+
+        // Initializing the CLI
+        boolean shortlen = false;
+
+        OptionParser op = new OptionParser(args);
+        op.setLongAndShortOpts(new LongOption[]{
+            new LongOption("hosts", true, 'h'),
+            new LongOption("user", true, 'u'),
+            new LongOption("service", true, 's')
+        });
+
+        // op.setLongOpts(ar);
+        op.setOptString("h:u:s:");
+
+        Tuple<Character, String> opt = op.getLongOpt(false);
+        System.out.println(opt.getSecond());
+        if (opt == null) {
+            System.out.println("usage:\n"
+                    + "   client --hosts <configfile> --user <user> --service <service>\n"
+                    + "   client --user <user> --service <service>\n"
+                    + "options:\n"
+                    + "   -h, --hosts Set the hosts file.\n"
+                    + "   -u, --user The user name.\n"
+                    + "   -s, --service The name of the service");
+            System.exit(0);
+        } else if (Objects.equals(opt.getFirst(), 'h')) {
+            config = new Config(opt.getSecond());
+        } else if (Objects.equals(opt.getFirst(), 'u')) {
+            // If the host is not specified then it is the local hosts.json file
+            user = opt.getSecond();
+            config = new Config("hosts.json");
+        }
+
+        Tuple<Character, String> opt2 = op.getLongOpt(false);
+        System.out.println(opt2.getSecond());
+        if (Objects.equals(opt2.getFirst(), 'u')) {
+            user = opt2.getSecond();
+        } else if (Objects.equals(opt2.getFirst(), 's')) {
+            service = opt2.getSecond();
+            System.out.println("SERVICE " + service);
+            shortlen = true;
+        }
+
+        if (shortlen != true) {
+            Tuple<Character, String> opt3 = op.getLongOpt(false);
+            System.out.println(opt3.getSecond());
+            if (opt3.getSecond() != null && Objects.equals(opt3.getFirst(), 's')) {
+                // Init the username and service
+                System.out.println("SERVICE " + service);
+                service = opt3.getSecond();
+            }
+        }
+        
+        System.out.println("THE SERVICE IS" + service);
+        // Check the service type and operate such.
+        if (service.equalsIgnoreCase("authenticate")) { // KDC --> EchoService
+
+            System.out.println("Running Chap.");
+
+//            // Runs the CHAP protocol
+//            // If chap returns true, run session key request
+//            if (CHAP()) {
+//                SessionKeyRequest();
+//                Ticket toSend = SessionKeyRequest();
+//                //Handshake(toSend);
+//                if (Handshake(toSend)) {
+//                    comm();
+//                }
+//                //find kdcd address
+//            } else { // If chap returns false
+//                System.exit(0);
+//            }
+
+        } else {
+            System.out.println("Service not found with name [" + service + "]. Closing program ");
+            System.exit(0);
+        } // If we do the bonus then we add another condition here.
+
+    }
 
     /**
-     * @param args the command line arguments
+     * Finds a host based off {@code host_name}
+     *
+     * @param host_name
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
+    private static Host getHost(String host_name) {
+        return hosts.stream().filter(n -> n.getService().equalsIgnoreCase(host_name)).findFirst().orElse(null);
     }
     
 }
