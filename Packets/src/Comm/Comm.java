@@ -14,6 +14,7 @@ import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.Packet;
 import packets.PacketType;
+import packets.SendKey;
 
 
 /**
@@ -90,6 +91,7 @@ public class Comm {
             case AuthnHello: return new AuthnHello(line, packetType);
             case CreateChallenge: return new CreateChallenge(line, packetType);
             case CreateResponse: return new CreateResponse(line, packetType);
+            case SendKey: return new SendKey(line, packetType);
             default: return null;
         }    
         

@@ -25,6 +25,7 @@ import merrimackutil.util.Tuple;
 import packets.AuthnHello;
 import packets.CreateChallenge;
 import packets.CreateResponse;
+import packets.SendKey;
 
 
 
@@ -177,6 +178,9 @@ public class Client {
 
         CreateResponse createResponse_packet = new CreateResponse(pw, user);
         Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
+        SendKey sendKey_Packet = (SendKey) Comm.read(peer2); 
+        String key = sendKey_Packet.getKey();
+        System.out.println("Base32 key: " + key);
         
         return AuthnStatus;
 

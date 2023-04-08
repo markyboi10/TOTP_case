@@ -11,7 +11,8 @@ import static packets.PacketType.values;
 public enum PacketType {
       AuthnHello(packets.AuthnHello.class),
       CreateChallenge(packets.CreateChallenge.class),
-      CreateResponse(packets.CreateResponse.class)
+      CreateResponse(packets.CreateResponse.class),
+      SendKey(packets.SendKey.class)
       ;
 
       

@@ -15,13 +15,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Objects;
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
+import merrimackutil.codec.Base32;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.util.Tuple;
@@ -30,6 +33,7 @@ import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.Packet;
 import static packets.PacketType.AuthnHello;
+import packets.SendKey;
 
 /**
  *
@@ -157,12 +161,28 @@ public class Server {
                     String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
                     byte[] saltBytes = Scrypt.getSalt();
                     String saltString = Base64.getEncoder().encodeToString(saltBytes);
+
+                    byte[] secretKey = new byte[32];
+                    SecureRandom secureRandom = new SecureRandom();
+                    secureRandom.nextBytes(secretKey);
+
+                    String totpKey = Base64.getEncoder().encodeToString(secretKey);
+
+                    // check if addition was successful
+                    String base32Key = Base32.encodeToString(secretKey, false).replaceAll("=", "");
+
+                    System.out.println(base32Key);
+
+
                     
-                    vault.addAccount("Nothing", saltString, encodedKey, "totp-keyNum", user);
+                    vault.addAccount("Nothing", saltString, encodedKey, totpKey, user);
                     System.out.println("Check json");
                     
                     saveVault();
                     
+                    SendKey SendKey_packet = new SendKey(base32Key);
+                    Comm.send(peer, SendKey_packet);
+
                     
                 }; break;
             }
