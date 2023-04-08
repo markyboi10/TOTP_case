@@ -13,21 +13,17 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Objects;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
-import merrimackutil.json.types.JSONObject;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
 import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.SendKey;
-
-
 
 /**
  *
@@ -52,8 +48,7 @@ public class Client {
             new LongOption("user", true, 'u'),
             new LongOption("service", true, 's')
         });
-
-        // op.setLongOpts(ar);
+        
         op.setOptString("h:u:s:");
 
         Tuple<Character, String> opt = op.getLongOpt(false);
@@ -98,9 +93,8 @@ public class Client {
         if (service.equalsIgnoreCase("authenticate")) { // KDC --> EchoService
 
             System.out.println("Running Auth.");
-            
-            Authn();
-            
+            Authn(); // Run authenticate protocol
+
 //            // Runs the CHAP protocol
 //            // If chap returns true, run session key request
 //            if (CHAP()) {
@@ -117,7 +111,7 @@ public class Client {
         } else if (service.equalsIgnoreCase("create")) {
             // to do
             System.out.println("Running Create");
-            Create();
+            Create(); // Run create protocol
         } else {
             System.out.println("Service not found with name [" + service + "]. Closing program ");
             System.exit(0);
@@ -125,7 +119,6 @@ public class Client {
 
     }
 
-    
     /**
      * Finds a host based off {@code host_name}
      *
@@ -135,57 +128,57 @@ public class Client {
         return hosts.stream().filter(n -> n.getService().equalsIgnoreCase(host_name)).findFirst().orElse(null);
     }
 
-    
-        private static boolean Authn() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
+    private static boolean Authn() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
 
         Host host = getHost("authenticate");
         boolean AuthnStatus = false;
-            
-        // MESSAGE 1
+
+        // MESSAGE 1: Send server request to authenticate
         AuthnHello hello = new AuthnHello(user, "authenticate"); // Construct the packet
         System.out.println("Sending hello packet");
         Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
-        
-        
-        
+
         return AuthnStatus;
 
-        }
-        
-            
-        private static boolean Create() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
+    }
 
-        Host host = getHost("create");
-        boolean AuthnStatus = false;
-            
-        // MESSAGE 1
+    /*
+    Create new account protocol
+    */
+    private static boolean Create() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
+
+        Host host = getHost("create"); //Grab host create from hosts.json
+        boolean CreateStatus = false; // Status of protocol
+
+        // MESSAGE 1: Send server request to make a new account
         AuthnHello hello = new AuthnHello(user, "create"); // Construct the packet
         System.out.println("Sending hello packet");
         Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
-        
+
         System.out.println("reading packet");
-        // MESSAGE 2
+        
+        // MESSAGE 2: Read in packet from server, extracts msg for password
         CreateChallenge createChallenge_Packet = (CreateChallenge) Comm.read(peer1); // 
         String receivedcreatePassRequest = createChallenge_Packet.getcreatePassRequest();
         System.out.println(receivedcreatePassRequest);
-        // MESSAGE 3
-        // Client plain text password
+        
+        // MESSAGE 3: Send server p.t. password
         Console console = System.console();
         pw = new String(console.readPassword("Create your Password: "));
 
         System.out.println("The password: " + pw);
         System.out.println("Password Created");
 
-        CreateResponse createResponse_packet = new CreateResponse(pw, user);
+        CreateResponse createResponse_packet = new CreateResponse(pw, user); //send pw and username off
+        
+        // MESSAGE 4: Receive base32 totp key and print it out
         Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
-        SendKey sendKey_Packet = (SendKey) Comm.read(peer2); 
+        SendKey sendKey_Packet = (SendKey) Comm.read(peer2);
         String key = sendKey_Packet.getKey();
         System.out.println("Base32 key: " + key);
-        
-        return AuthnStatus;
 
-        }
-        
+        return CreateStatus;
 
+    }
 
 }

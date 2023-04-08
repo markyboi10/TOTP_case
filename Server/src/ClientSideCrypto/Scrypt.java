@@ -29,8 +29,8 @@ public class Scrypt {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */
-    
     public static byte[] salt = null;
+
     public static SecretKey genKey(String password, String uname) throws NoSuchAlgorithmException,
             InvalidKeySpecException {
         final int COST = 2048;          // A.K.A Iterations
@@ -60,6 +60,5 @@ public class Scrypt {
     public static byte[] getSalt() {
         return salt;
     }
-    
-    
+
 }
