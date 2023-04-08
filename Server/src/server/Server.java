@@ -1,20 +1,29 @@
 package server;
 
+import ClientSideCrypto.Scrypt;
 import Comm.Comm;
+import ServerConfig.Account;
 import ServerConfig.Config;
 import ServerConfig.Password;
 import ServerConfig.PasswordConfig;
+import ServerConfig.Vault;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Objects;
+import javax.crypto.SecretKey;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
+import merrimackutil.json.JsonIO;
+import merrimackutil.json.types.JSONObject;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
 import packets.CreateChallenge;
@@ -32,6 +41,7 @@ public class Server {
     private static Config config;
     private static PasswordConfig passwordConfig;
     public static ArrayList<Password> passwd = new ArrayList<>();
+    private static Vault vault = null;
 
     /**
      * @param args the command line arguments
@@ -39,7 +49,8 @@ public class Server {
      * @throws java.io.InvalidObjectException
      * @throws java.security.NoSuchAlgorithmException
      */
-    public static void main(String[] args) throws FileNotFoundException, InvalidObjectException, IOException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws FileNotFoundException, InvalidObjectException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        
         OptionParser op = new OptionParser(args);
         LongOption[] ar = new LongOption[2];
         ar[0] = new LongOption("config", true, 'c');
@@ -81,7 +92,7 @@ public class Server {
 
     }
 
-    private static void poll() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
+    private static void poll() throws IOException, NoSuchMethodException, NoSuchAlgorithmException, InvalidKeySpecException {
         System.out.println("Server running . . . ");
         while (true) { // Consistently accept connections
 
@@ -127,16 +138,73 @@ public class Server {
                 }; break;
                 
                 case CreateResponse: {
+                    MessageDigest digest = MessageDigest.getInstance("SHA-256");
                     
                     CreateResponse createResponse_packet = (CreateResponse) packet;
-                    
                     String clientPass = createResponse_packet.getclientPass();
+                    String user = createResponse_packet.getUser();
+                   
+                    loadVault();
+                    
                     System.out.println("Received client pass: " + clientPass);
+                    //vault =  new Vault("C:\\Users\\Mark Case\\Documents\\NetBeansProjects\\TOTP_case\\Config\\passwd.json");
+                    
+                    byte[] preHashClientPassBytes = Base64.getDecoder().decode(clientPass);
+                    byte[] hashedClientPassBytes = digest.digest(preHashClientPassBytes);
+                    
+                    String hashedClientPassString = Base64.getEncoder().encodeToString(hashedClientPassBytes);
+                    SecretKey key = Scrypt.genKey(hashedClientPassString, user);
+                    String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
+                    byte[] saltBytes = Scrypt.getSalt();
+                    String saltString = Base64.getEncoder().encodeToString(saltBytes);
+                    
+                    vault.addAccount("Nothing", saltString, encodedKey, "totp-keyNum", user);
+                    System.out.println("Check json");
+                    
+                    saveVault();
                     
                     
                 }; break;
             }
         }
     }
+
+    public static void saveVault() {
+        try {
+            JsonIO.writeSerializedObject(vault, new File("Config\\passwd.json"));
+        } catch (FileNotFoundException ex) {
+            System.out.println("Could not save vault to disk.");
+            System.out.println(ex);
+        }
+    }
+    
+      public static void loadVault() throws InvalidObjectException
+  {
+    JSONObject obj = null;
+    File vaultFile = new File("Config\\passwd.json");
+ String pass = "";
+    // If there is no vault create one.
+    if (!vaultFile.exists())
+    {
+        vault = new Vault(pass, obj);
+      return;
+    }
+
+    try
+    {
+      obj = JsonIO.readObject(vaultFile);
+      vault = new Vault("", obj);
+    }
+    catch (FileNotFoundException ex)
+    {
+      System.out.println("Could not access the vault file.");
+      System.exit(1);
+    }
+    catch (InvalidObjectException ex)
+    {
+      System.out.println(ex);
+      System.exit(1);
+    }
+  }
 
 }

@@ -20,6 +20,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
+import merrimackutil.json.types.JSONObject;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
 import packets.CreateChallenge;
@@ -174,12 +175,13 @@ public class Client {
         System.out.println("The password: " + pw);
         System.out.println("Password Created");
 
-        CreateResponse createResponse_packet = new CreateResponse(pw);
+        CreateResponse createResponse_packet = new CreateResponse(pw, user);
         Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
         
         return AuthnStatus;
 
         }
+        
 
 
 }

@@ -25,20 +25,27 @@ public class CreateResponse implements Packet, JSONSerializable {
     
     // Packet Data
     private String clientPass;
+    private String user;
 
     /**
      * Default Constructor for a SessionKeyResponse
      * @param clientPass
 
      */
-    public CreateResponse(String clientPass) {
+    public CreateResponse(String clientPass, String user) {
         this.clientPass = clientPass;
+        this.user = user;
     }
 
 
     public String getclientPass() {
         return clientPass;
     }
+
+    public String getUser() {
+        return user;
+    }
+    
 
     /**
      * Converts a JSONObject into a ticket object
@@ -79,6 +86,10 @@ public class CreateResponse implements Packet, JSONSerializable {
               this.clientPass = tmp.getString("clientPass");
             else
               throw new InvalidObjectException("Expected an Ticket object -- clientPass expected.");
+            if (tmp.containsKey("user"))
+              this.user = tmp.getString("user");
+            else
+              throw new InvalidObjectException("Expected an Ticket object -- user expected.");
           }
           else 
             throw new InvalidObjectException("Expected a Ticket - Type JSONObject not found.");
@@ -93,7 +104,7 @@ public class CreateResponse implements Packet, JSONSerializable {
         JSONObject object = new JSONObject();
         object.put("packetType", PACKET_TYPE.toString());
         object.put("clientPass", this.clientPass);
-
+        object.put("user", this.user);
 
         return object;
     }
