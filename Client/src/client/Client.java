@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Scanner;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -26,6 +27,7 @@ import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.PassResponse;
 import packets.SendKey;
+import packets.SendTOTP;
 
 /**
  *
@@ -156,17 +158,20 @@ public class Client {
         
         // MESSAGE 3: Receive status and extract outcome
         PassResponse passResp = (PassResponse) Comm.read(s2);
+        Scanner scanner = new Scanner(System.in);
         String totp;
         boolean status = passResp.getMsg();
-        // If true
+// If true
         if (status) {
             // MESSAGE 3: Send server p.t. password
-        Console console2 = System.console();
-        totp = new String(console2.readPassword("Enter your TOTP: "));
+            System.out.print("Enter your TOTP: ");
+            totp = scanner.nextLine();
+            SendTOTP sendTOTP_packet = new SendTOTP(totp);
+            Socket s3 = Comm.connectAndSend(host.getAddress(), host.getPort(), sendTOTP_packet);
         } else { // If false
-            
+
         }
-        
+
         return AuthnStatus;
 
     }

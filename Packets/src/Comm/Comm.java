@@ -17,6 +17,7 @@ import packets.Packet;
 import packets.PacketType;
 import packets.PassResponse;
 import packets.SendKey;
+import packets.SendTOTP;
 
 
 /**
@@ -96,6 +97,7 @@ public class Comm {
             case SendKey: return new SendKey(line, packetType);
             case AuthnPass: return new AuthnPass(line, packetType);
             case PassResponse: return new PassResponse(line, packetType);
+            case SendTOTP: return new SendTOTP(line, packetType);
             default: return null;
         }    
         

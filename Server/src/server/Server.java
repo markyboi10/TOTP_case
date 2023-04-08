@@ -35,6 +35,7 @@ import static packets.PacketType.AuthnHello;
 import static packets.PacketType.PassResponse;
 import packets.PassResponse;
 import packets.SendKey;
+import packets.SendTOTP;
 
 /**
  *
@@ -245,7 +246,16 @@ public class Server {
                         System.exit(0);
 
                     }
-                }
+                }; break;
+                
+                case SendTOTP: {
+                    SendTOTP sendTOTP_packet = (SendTOTP) packet;
+                    String totp = sendTOTP_packet.getTotp();
+                    System.out.println("RECEIVED TOTP: " + totp);
+                    
+                    long totpLong = Long.parseLong(totp);
+                    
+                }; break;
             
             }
         }

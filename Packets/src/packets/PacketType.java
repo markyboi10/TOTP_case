@@ -14,7 +14,8 @@ public enum PacketType {
       CreateResponse(packets.CreateResponse.class),
       SendKey(packets.SendKey.class),
       AuthnPass(packets.AuthnPass.class),
-      PassResponse(packets.PassResponse.class);
+      PassResponse(packets.PassResponse.class),
+      SendTOTP(packets.SendTOTP.class)
       ;
 
       
