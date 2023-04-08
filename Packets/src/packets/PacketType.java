@@ -13,7 +13,8 @@ public enum PacketType {
       CreateChallenge(packets.CreateChallenge.class),
       CreateResponse(packets.CreateResponse.class),
       SendKey(packets.SendKey.class),
-      AuthnPass(packets.AuthnPass.class)
+      AuthnPass(packets.AuthnPass.class),
+      PassResponse(packets.PassResponse.class);
       ;
 
       

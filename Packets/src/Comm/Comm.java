@@ -15,6 +15,7 @@ import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.Packet;
 import packets.PacketType;
+import packets.PassResponse;
 import packets.SendKey;
 
 
@@ -94,6 +95,7 @@ public class Comm {
             case CreateResponse: return new CreateResponse(line, packetType);
             case SendKey: return new SendKey(line, packetType);
             case AuthnPass: return new AuthnPass(line, packetType);
+            case PassResponse: return new PassResponse(line, packetType);
             default: return null;
         }    
         

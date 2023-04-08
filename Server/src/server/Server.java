@@ -32,6 +32,8 @@ import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.Packet;
 import static packets.PacketType.AuthnHello;
+import static packets.PacketType.PassResponse;
+import packets.PassResponse;
 import packets.SendKey;
 
 /**
@@ -233,10 +235,14 @@ public class Server {
                         // If valid password, boolean is true 
                         status = true;
                         System.out.println("SUCCESS");
+                        // Create the packet and send
+                        PassResponse passResponse_packet = new PassResponse(status);
+                        Comm.send(peer, passResponse_packet);
                     } else {
                         // If invalid password, boolean remains false
                         // Create the packet and send
                         System.out.println("FAILURE");
+                        System.exit(0);
 
                     }
                 }

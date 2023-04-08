@@ -24,6 +24,7 @@ import packets.AuthnHello;
 import packets.AuthnPass;
 import packets.CreateChallenge;
 import packets.CreateResponse;
+import packets.PassResponse;
 import packets.SendKey;
 
 /**
@@ -153,6 +154,18 @@ public class Client {
         AuthnPass authnPass_packet = new AuthnPass(pw, user); //send pw and username off
         Socket s2 = Comm.connectAndSend(host.getAddress(), host.getPort(), authnPass_packet);
         
+        // MESSAGE 3: Receive status and extract outcome
+        PassResponse passResp = (PassResponse) Comm.read(s2);
+        String totp;
+        boolean status = passResp.getMsg();
+        // If true
+        if (status) {
+            // MESSAGE 3: Send server p.t. password
+        Console console2 = System.console();
+        totp = new String(console2.readPassword("Enter your TOTP: "));
+        } else { // If false
+            
+        }
         
         return AuthnStatus;
 
