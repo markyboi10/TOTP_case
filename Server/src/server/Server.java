@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -19,7 +21,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import javax.crypto.Mac;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.codec.Base32;
@@ -48,6 +53,9 @@ public class Server {
     private static PasswordConfig passwordConfig;
     public static ArrayList<Password> passwd = new ArrayList<>();
     private static Vault vault = null;
+        private static final int TIME_STEP = 30; // in seconds
+    private static final int TOTP_LENGTH = 6; // in digits
+    private static final String HMAC_ALGORITHM = "HmacSHA1";
 
     /**
      * @param args the command line arguments
@@ -178,7 +186,7 @@ public class Server {
                     String saltString = Base64.getEncoder().encodeToString(saltBytes);
 
                     // Create totp key and dervied base32 version
-                    byte[] secretKey = new byte[32];
+                    byte[] secretKey = new byte[16];
                     SecureRandom secureRandom = new SecureRandom();
                     secureRandom.nextBytes(secretKey);
                     //String totp key
@@ -251,9 +259,33 @@ public class Server {
                 case SendTOTP: {
                     SendTOTP sendTOTP_packet = (SendTOTP) packet;
                     String totp = sendTOTP_packet.getTotp();
+                    String user = sendTOTP_packet.getUser();
                     System.out.println("RECEIVED TOTP: " + totp);
+                    String totp_Key = null;
+                    int totpInt = Integer.parseInt(totp);
+                    for (Password pass : passwd) {
+                        if (pass.getUser().equalsIgnoreCase(user)) {
+
+                            totp_Key = pass.getTotp_key();
+
+                            //sendSessionKey(user, sessionName, pw);
+                            break;
+                        }
+                    }
                     
-                    long totpLong = Long.parseLong(totp);
+                    //String totp key
+                    byte[] totpKey = Base64.getDecoder().decode(totp_Key);
+
+                    // Base32 converted totp key
+                    String base32Key = Base32.encodeToString(totpKey, false).replaceAll("=", "");
+                    
+                    if (verifyOTP(base32Key, totpInt)) {
+                        System.out.println("TOTP VERIFICATION SUCCESSFULL");
+                    } else {
+                        System.out.println("TOTP VERIFICATION FAILED");
+                    }
+                    
+                    
                     
                 }; break;
             
@@ -293,5 +325,35 @@ public class Server {
             System.exit(1);
         }
     }
+    private static byte[] generateTOTP(byte[] key, byte[] data) {
+        try {
+            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
+            mac.init(new SecretKeySpec(key, HMAC_ALGORITHM));
+            return mac.doFinal(data);
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    private static int truncateHash(byte[] hash) {
+        int offset = hash[hash.length - 1] & 0xf;
+        return ((hash[offset] & 0x7f) << 24) |
+                ((hash[offset + 1] & 0xff) << 16) |
+                ((hash[offset + 2] & 0xff) << 8) |
+                (hash[offset + 3] & 0xff);
+
+    }
+
+    
+    public static boolean verifyOTP(String base32Key, int otp) {
+        byte[] key = Base32.decode(base32Key); // convert the base32 key to bytes
+        long time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) / TIME_STEP; // current time in time step units
+        byte[] data = ByteBuffer.allocate(8).putLong(time).array(); // convert the time to 8-byte array
+        byte[] hash = generateTOTP(key, data); // generate the TOTP hash
+        int expectedOTP = truncateHash(hash) % (int) Math.pow(10, TOTP_LENGTH); // truncate the hash and convert to a 6-digit number
+        System.out.println(expectedOTP);
+        
+        return expectedOTP == otp; // compare with the entered OTP
+    }
+    
 } // end class

@@ -166,7 +166,7 @@ public class Client {
             // MESSAGE 3: Send server p.t. password
             System.out.print("Enter your TOTP: ");
             totp = scanner.nextLine();
-            SendTOTP sendTOTP_packet = new SendTOTP(totp);
+            SendTOTP sendTOTP_packet = new SendTOTP(totp, user);
             Socket s3 = Comm.connectAndSend(host.getAddress(), host.getPort(), sendTOTP_packet);
         } else { // If false
 

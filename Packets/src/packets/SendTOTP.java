@@ -23,6 +23,7 @@ public class SendTOTP implements Packet, JSONSerializable {
     
     // Packet Data
     private String totp;
+    private String user;
     private String accType;
 
     /**
@@ -30,13 +31,18 @@ public class SendTOTP implements Packet, JSONSerializable {
      * @param uName
      * @param accType
      */
-    public SendTOTP(String totp) {
+    public SendTOTP(String totp, String user) {
         this.totp = totp;
+        this.user = user;
 
     }
 
     public String getTotp() {
         return totp;
+    }
+
+    public String getUser() {
+        return user;
     }
 
 
@@ -81,6 +87,12 @@ public class SendTOTP implements Packet, JSONSerializable {
             else
               throw new InvalidObjectException("Expected an Ticket object -- totp expected.");
             
+            if (tmp.containsKey("user")) {
+                  this.user = tmp.getString("user");
+              } else {
+                  throw new InvalidObjectException("Expected an Ticket object -- user expected.");
+              }
+
           }
           else 
             throw new InvalidObjectException("Expected a Ticket - Type JSONObject not found.");
@@ -95,7 +107,7 @@ public class SendTOTP implements Packet, JSONSerializable {
         JSONObject object = new JSONObject();
         object.put("packetType", PACKET_TYPE.toString());
         object.put("totp", this.totp);
-
+        object.put("user", this.user);
         return object;
     }
 
