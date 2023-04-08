@@ -89,7 +89,6 @@ public class Client {
             System.out.println(opt3.getSecond());
             if (opt3.getSecond() != null && Objects.equals(opt3.getFirst(), 's')) {
                 // Init the username and service
-                System.out.println("SERVICE " + service);
                 service = opt3.getSecond();
             }
         }
@@ -127,7 +126,6 @@ public class Client {
 
         // MESSAGE 1: Send server request to authenticate
         AuthnHello hello = new AuthnHello(user, "authenticate"); // Construct the packet
-        System.out.println("Sending hello packet");
         Socket s1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
 
         // MESSAGE 2: Read in packet from server, extracts msg for password
@@ -137,9 +135,6 @@ public class Client {
         // MESSAGE 3: Send server p.t. password
         Console console = System.console();
         pw = new String(console.readPassword("Enter your Password: "));
-
-        System.out.println("The password: " + pw);
-        System.out.println("Password Created");
 
         AuthnPass authnPass_packet = new AuthnPass(pw, user); //send pw and username off
         Socket s2 = Comm.connectAndSend(host.getAddress(), host.getPort(), authnPass_packet);
@@ -183,10 +178,8 @@ public class Client {
 
         // MESSAGE 1: Send server request to make a new account
         AuthnHello hello = new AuthnHello(user, "create"); // Construct the packet
-        System.out.println("Sending hello packet");
         Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
 
-        System.out.println("reading packet");
 
         // MESSAGE 2: Read in packet from server, extracts msg for password
         CreateChallenge createChallenge_Packet = (CreateChallenge) Comm.read(peer1); // 
@@ -196,9 +189,6 @@ public class Client {
         // MESSAGE 3: Send server p.t. password
         Console console = System.console();
         pw = new String(console.readPassword("Create your Password: "));
-
-        System.out.println("The password: " + pw);
-        System.out.println("Password Created");
 
         CreateResponse createResponse_packet = new CreateResponse(pw, user); //send pw and username off
         Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
