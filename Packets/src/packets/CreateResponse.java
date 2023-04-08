@@ -1,10 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package packets;
 
-import packets.Packet;
 import java.io.InvalidObjectException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +7,6 @@ import merrimackutil.json.JSONSerializable;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import static packets.PacketType.AuthnHello;
 
 /**
  *
@@ -30,6 +24,7 @@ public class CreateResponse implements Packet, JSONSerializable {
     /**
      * Default Constructor for a SessionKeyResponse
      * @param clientPass
+     * @param user
 
      */
     public CreateResponse(String clientPass, String user) {
@@ -50,6 +45,7 @@ public class CreateResponse implements Packet, JSONSerializable {
     /**
      * Converts a JSONObject into a ticket object
      * @param packet byte[] of information representing this packet
+     * @param packetType1
      * @throws InvalidObjectException Thrown if {@code object} is not a Ticket JSONObject
      */
     public CreateResponse(String packet, PacketType packetType1) throws InvalidObjectException {
@@ -72,6 +68,7 @@ public class CreateResponse implements Packet, JSONSerializable {
     /**
      * Converts a JSON type to this object
      * Converts types of Byte[] into strings for travel
+     * @param obj
      * @param jsont
      * @throws InvalidObjectException 
      */

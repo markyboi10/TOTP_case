@@ -23,6 +23,7 @@ import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
 import packets.AuthnPass;
+import packets.AuthnStatus;
 import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.PassResponse;
@@ -52,7 +53,7 @@ public class Client {
             new LongOption("user", true, 'u'),
             new LongOption("service", true, 's')
         });
-        
+
         op.setOptString("h:u:s:");
 
         Tuple<Character, String> opt = op.getLongOpt(false);
@@ -99,19 +100,6 @@ public class Client {
             System.out.println("Running Auth.");
             Authn(); // Run authenticate protocol
 
-//            // Runs the CHAP protocol
-//            // If chap returns true, run session key request
-//            if (CHAP()) {
-//                SessionKeyRequest();
-//                Ticket toSend = SessionKeyRequest();
-//                //Handshake(toSend);
-//                if (Handshake(toSend)) {
-//                    comm();
-//                }
-//                //find kdcd address
-//            } else { // If chap returns false
-//                System.exit(0);
-//            }
         } else if (service.equalsIgnoreCase("create")) {
             // to do
             System.out.println("Running Create");
@@ -145,7 +133,7 @@ public class Client {
         // MESSAGE 2: Read in packet from server, extracts msg for password
         CreateChallenge createChallenge_Packet = (CreateChallenge) Comm.read(s1); // 
         String receivedcreatePassRequest = createChallenge_Packet.getcreatePassRequest();
-        
+
         // MESSAGE 3: Send server p.t. password
         Console console = System.console();
         pw = new String(console.readPassword("Enter your Password: "));
@@ -155,30 +143,39 @@ public class Client {
 
         AuthnPass authnPass_packet = new AuthnPass(pw, user); //send pw and username off
         Socket s2 = Comm.connectAndSend(host.getAddress(), host.getPort(), authnPass_packet);
-        
+
         // MESSAGE 3: Receive status and extract outcome
         PassResponse passResp = (PassResponse) Comm.read(s2);
         Scanner scanner = new Scanner(System.in);
         String totp;
         boolean status = passResp.getMsg();
-// If true
+        Socket s3 = null;   
         if (status) {
-            // MESSAGE 3: Send server p.t. password
+            // MESSAGE 3: Send server totp password
             System.out.print("Enter your TOTP: ");
             totp = scanner.nextLine();
             SendTOTP sendTOTP_packet = new SendTOTP(totp, user);
-            Socket s3 = Comm.connectAndSend(host.getAddress(), host.getPort(), sendTOTP_packet);
+            s3 = Comm.connectAndSend(host.getAddress(), host.getPort(), sendTOTP_packet);
         } else { // If false
-
+            System.out.println("Invalid totp config, goodbye ;) ");
+            System.exit(0);
         }
-
+        
+        //MESSAGE $: Receive totp verification status
+        AuthnStatus authnStatus_packet = (AuthnStatus) Comm.read(s3);
+        boolean finalStatus = authnStatus_packet.getMsg();
+        if (finalStatus) {
+            System.out.print("Authentification was successful :)) ");
+        } else {
+            System.out.print("Authentification failed. . . (≖_≖ )");
+        }
         return AuthnStatus;
 
     }
 
     /*
     Create new account protocol
-    */
+     */
     private static boolean Create() throws IOException, NoSuchMethodException, NoSuchAlgorithmException {
 
         Host host = getHost("create"); //Grab host create from hosts.json
@@ -190,12 +187,12 @@ public class Client {
         Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
 
         System.out.println("reading packet");
-        
+
         // MESSAGE 2: Read in packet from server, extracts msg for password
         CreateChallenge createChallenge_Packet = (CreateChallenge) Comm.read(peer1); // 
         String receivedcreatePassRequest = createChallenge_Packet.getcreatePassRequest();
         System.out.println(receivedcreatePassRequest);
-        
+
         // MESSAGE 3: Send server p.t. password
         Console console = System.console();
         pw = new String(console.readPassword("Create your Password: "));
@@ -205,7 +202,7 @@ public class Client {
 
         CreateResponse createResponse_packet = new CreateResponse(pw, user); //send pw and username off
         Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
-        
+
         // MESSAGE 4: Receive base32 totp key and print it out
         SendKey sendKey_Packet = (SendKey) Comm.read(peer2);
         String key = sendKey_Packet.getKey();

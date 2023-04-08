@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ClientSideCrypto;
 
 import java.nio.charset.StandardCharsets;
@@ -23,9 +19,6 @@ public class Scrypt {
     /**
      * Derives the AES-128 key from the password.
      *
-     * @param password the password to derive the key from
-     * @param uname
-     * @return the AES-128 key
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */

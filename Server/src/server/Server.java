@@ -33,11 +33,11 @@ import merrimackutil.json.types.JSONObject;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
 import packets.AuthnPass;
+import packets.AuthnStatus;
 import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.Packet;
 import static packets.PacketType.AuthnHello;
-import static packets.PacketType.PassResponse;
 import packets.PassResponse;
 import packets.SendKey;
 import packets.SendTOTP;
@@ -53,7 +53,7 @@ public class Server {
     private static PasswordConfig passwordConfig;
     public static ArrayList<Password> passwd = new ArrayList<>();
     private static Vault vault = null;
-        private static final int TIME_STEP = 30; // in seconds
+    private static final int TIME_STEP = 30; // in seconds
     private static final int TOTP_LENGTH = 6; // in digits
     private static final String HMAC_ALGORITHM = "HmacSHA1";
 
@@ -134,17 +134,11 @@ public class Server {
 
                     // Authn
                     if (passwd.stream().anyMatch(n -> n.getUser().equalsIgnoreCase(AuthnHello_packet.getuName())) && authenticate.equalsIgnoreCase(AuthnHello_packet.getAccType())) { //user exists and type authn
-                        // Confirm auth and create are seperate
-                        System.out.println("Authn_packet received, here is the type: " + AuthnHello_packet.getAccType());
-                        System.out.println("Authn_packet received, here is the username: " + AuthnHello_packet.getuName());
                         String createPassRequest = ("Enter your password:");
                         CreateChallenge createChallenge_packet = new CreateChallenge(createPassRequest);
-                        Comm.send(peer, createChallenge_packet);                              
-                    // Create
+                        Comm.send(peer, createChallenge_packet);
+                        // Create
                     } else if (passwd.stream().noneMatch(n -> n.getUser().equalsIgnoreCase(AuthnHello_packet.getuName())) && create.equalsIgnoreCase(AuthnHello_packet.getAccType())) { // user doesn't exist and type create
-                        // Confirm auth and create are seperate
-                        System.out.println("Authn_packet received, here is the type: " + AuthnHello_packet.getAccType());
-                        System.out.println("Authn_packet received, here is the username: " + AuthnHello_packet.getuName());
                         // Create the packet and send
                         String createPassRequest = ("Create your password creation:");
                         // Send out a request for user 
@@ -206,17 +200,17 @@ public class Server {
                 }
                 ;
                 break;
-                
+
                 case AuthnPass: {
                     //SHA 256 hash function
                     MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                    
+
                     boolean status = false;
-                    
+
                     AuthnPass authnPass_packet = (AuthnPass) packet;
                     String userIs = authnPass_packet.getUser();
                     String passIs = authnPass_packet.getclientPass();
-                    
+
                     byte[] preHashClientPassBytes = Base64.getDecoder().decode(passIs);
                     byte[] hashedClientPassBytes = digest.digest(preHashClientPassBytes);
                     // String for of hashed pw
@@ -225,42 +219,35 @@ public class Server {
                     SecretKey key = Scrypt.genKey(hashedClientPassString, userIs);
                     // Convert returned key into a string form
                     String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
-                    // Grab salt
-                    byte[] saltBytes = Scrypt.getSalt();
-                    String saltString = Base64.getEncoder().encodeToString(saltBytes);
 
-                    
+                    loadVault(); //open our vault
+
                     if (passwd.stream().anyMatch(secret -> {
                         // byte array and combine the two like the client did when they sent their challenge response
                         String databasePass = secret.getPass();
 
-                        System.out.println(databasePass);
-                        System.out.println(encodedKey);
-                        
-                            // Compare the final hash with the received hash
-                            System.out.println(databasePass.equalsIgnoreCase(encodedKey));
                         return databasePass.equalsIgnoreCase(encodedKey);
                     })) {
-                        // If valid password, boolean is true 
+
                         status = true;
-                        System.out.println("SUCCESS");
                         // Create the packet and send
                         PassResponse passResponse_packet = new PassResponse(status);
                         Comm.send(peer, passResponse_packet);
                     } else {
-                        // If invalid password, boolean remains false
-                        // Create the packet and send
-                        System.out.println("FAILURE");
+
+                        System.out.println("FAILED AUTHENTICATION");
                         System.exit(0);
 
                     }
-                }; break;
-                
+                }
+                ;
+                break;
+
                 case SendTOTP: {
+                    boolean status = false;
                     SendTOTP sendTOTP_packet = (SendTOTP) packet;
                     String totp = sendTOTP_packet.getTotp();
                     String user = sendTOTP_packet.getUser();
-                    System.out.println("RECEIVED TOTP: " + totp);
                     String totp_Key = null;
                     int totpInt = Integer.parseInt(totp);
                     for (Password pass : passwd) {
@@ -268,27 +255,33 @@ public class Server {
 
                             totp_Key = pass.getTotp_key();
 
-                            //sendSessionKey(user, sessionName, pw);
                             break;
                         }
                     }
-                    
+
                     //String totp key
                     byte[] totpKey = Base64.getDecoder().decode(totp_Key);
 
                     // Base32 converted totp key
                     String base32Key = Base32.encodeToString(totpKey, false).replaceAll("=", "");
-                    
+
                     if (verifyOTP(base32Key, totpInt)) {
+                        status = true;
                         System.out.println("TOTP VERIFICATION SUCCESSFULL");
+                        // Create the packet and send
+                        AuthnStatus authnStatus_packet = new AuthnStatus(status);
+                        Comm.send(peer, authnStatus_packet);
                     } else {
                         System.out.println("TOTP VERIFICATION FAILED");
+                        // Create the packet and send
+                        AuthnStatus authnStatus_packet = new AuthnStatus(status);
+                        Comm.send(peer, authnStatus_packet);
                     }
-                    
-                    
-                    
-                }; break;
-            
+
+                }
+                ;
+                break;
+
             }
         }
     }
@@ -299,7 +292,6 @@ public class Server {
             JsonIO.writeSerializedObject(vault, new File("Config\\passwd.json"));
         } catch (FileNotFoundException ex) {
             System.out.println("Could not save vault to disk.");
-            System.out.println(ex);
         }
     }
 
@@ -325,6 +317,7 @@ public class Server {
             System.exit(1);
         }
     }
+
     private static byte[] generateTOTP(byte[] key, byte[] data) {
         try {
             Mac mac = Mac.getInstance(HMAC_ALGORITHM);
@@ -337,23 +330,21 @@ public class Server {
 
     private static int truncateHash(byte[] hash) {
         int offset = hash[hash.length - 1] & 0xf;
-        return ((hash[offset] & 0x7f) << 24) |
-                ((hash[offset + 1] & 0xff) << 16) |
-                ((hash[offset + 2] & 0xff) << 8) |
-                (hash[offset + 3] & 0xff);
+        return ((hash[offset] & 0x7f) << 24)
+                | ((hash[offset + 1] & 0xff) << 16)
+                | ((hash[offset + 2] & 0xff) << 8)
+                | (hash[offset + 3] & 0xff);
 
     }
 
-    
     public static boolean verifyOTP(String base32Key, int otp) {
         byte[] key = Base32.decode(base32Key); // convert the base32 key to bytes
-        long time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) / TIME_STEP; // current time in time step units
-        byte[] data = ByteBuffer.allocate(8).putLong(time).array(); // convert the time to 8-byte array
-        byte[] hash = generateTOTP(key, data); // generate the TOTP hash
-        int expectedOTP = truncateHash(hash) % (int) Math.pow(10, TOTP_LENGTH); // truncate the hash and convert to a 6-digit number
-        System.out.println(expectedOTP);
-        
+        long time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) / TIME_STEP; // Cuurrent time
+        byte[] data = ByteBuffer.allocate(8).putLong(time).array(); // Convert the time to 8-byte array
+        byte[] hash = generateTOTP(key, data); // TOTP hash
+        int expectedOTP = truncateHash(hash) % (int) Math.pow(10, TOTP_LENGTH); // Convert to a 6-digit number
+
         return expectedOTP == otp; // compare with the entered OTP
     }
-    
+
 } // end class

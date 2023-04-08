@@ -1,6 +1,5 @@
 package packets;
 
-import packets.Packet;
 import java.io.InvalidObjectException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -8,7 +7,6 @@ import merrimackutil.json.JSONSerializable;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import static packets.PacketType.AuthnHello;
 
 /**
  *
@@ -44,6 +42,7 @@ public class AuthnHello implements Packet, JSONSerializable {
     /**
      * Converts a JSONObject into a ticket object
      * @param packet byte[] of information representing this packet
+     * @param packetType1
      * @throws InvalidObjectException Thrown if {@code object} is not a Ticket JSONObject
      */
     public AuthnHello(String packet, PacketType packetType1) throws InvalidObjectException {
@@ -66,7 +65,7 @@ public class AuthnHello implements Packet, JSONSerializable {
     /**
      * Converts a JSON type to this object
      * Converts types of Byte[] into strings for travel
-     * @param jsont
+     * @param obj
      * @throws InvalidObjectException 
      */
     @Override

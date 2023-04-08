@@ -11,6 +11,7 @@ import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import packets.AuthnHello;
 import packets.AuthnPass;
+import packets.AuthnStatus;
 import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.Packet;
@@ -98,6 +99,7 @@ public class Comm {
             case AuthnPass: return new AuthnPass(line, packetType);
             case PassResponse: return new PassResponse(line, packetType);
             case SendTOTP: return new SendTOTP(line, packetType);
+            case AuthnStatus: return new AuthnStatus(line, packetType);
             default: return null;
         }    
         

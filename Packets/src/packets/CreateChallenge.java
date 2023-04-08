@@ -4,7 +4,6 @@
  */
 package packets;
 
-import packets.Packet;
 import java.io.InvalidObjectException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +11,6 @@ import merrimackutil.json.JSONSerializable;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import static packets.PacketType.AuthnHello;
 
 /**
  *
@@ -28,8 +26,7 @@ public class CreateChallenge implements Packet, JSONSerializable {
 
     /**
      * Default Constructor for a SessionKeyResponse
-     * @param uName
-     * @param accType
+     * @param createPassRequest
      */
     public CreateChallenge(String createPassRequest) {
         this.createPassRequest = createPassRequest;
@@ -43,6 +40,7 @@ public class CreateChallenge implements Packet, JSONSerializable {
     /**
      * Converts a JSONObject into a ticket object
      * @param packet byte[] of information representing this packet
+     * @param packetType1
      * @throws InvalidObjectException Thrown if {@code object} is not a Ticket JSONObject
      */
     public CreateChallenge(String packet, PacketType packetType1) throws InvalidObjectException {
@@ -65,6 +63,7 @@ public class CreateChallenge implements Packet, JSONSerializable {
     /**
      * Converts a JSON type to this object
      * Converts types of Byte[] into strings for travel
+     * @param obj
      * @param jsont
      * @throws InvalidObjectException 
      */

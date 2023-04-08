@@ -1,6 +1,5 @@
 package packets;
 
-import packets.Packet;
 import java.io.InvalidObjectException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -8,49 +7,38 @@ import merrimackutil.json.JSONSerializable;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import static packets.PacketType.AuthnHello;
 
 /**
  *
  * @author Mark Case
  */
-public class AuthnPass implements Packet, JSONSerializable {
+public class AuthnStatus implements Packet, JSONSerializable {
         
     // Packet Type
-    private static final PacketType PACKET_TYPE = PacketType.AuthnPass;
+    private static final PacketType PACKET_TYPE = PacketType.AuthnStatus;
     
     // Packet Data
-    private String clientPass;
-    private String user;
+    private boolean msg;
 
     /**
      * Default Constructor for a SessionKeyResponse
-     * @param clientPass
-     * @param user
-
+     * @param msg
      */
-    public AuthnPass(String clientPass, String user) {
-        this.clientPass = clientPass;
-        this.user = user;
+    public AuthnStatus(boolean msg) {
+        this.msg = msg;
     }
 
-
-    public String getclientPass() {
-        return clientPass;
+    public boolean getMsg() {
+        return msg;
     }
-
-    public String getUser() {
-        return user;
-    }
-    
 
     /**
      * Converts a JSONObject into a ticket object
      * @param packet byte[] of information representing this packet
-     * @param packetType1
+     * @param packetType
      * @throws InvalidObjectException Thrown if {@code object} is not a Ticket JSONObject
      */
-    public AuthnPass(String packet, PacketType packetType1) throws InvalidObjectException {
+    public AuthnStatus(String packet, PacketType packetType) throws InvalidObjectException {
         recieve(packet);
     }
 
@@ -80,14 +68,10 @@ public class AuthnPass implements Packet, JSONSerializable {
         if (obj instanceof JSONObject)
           {
             tmp = (JSONObject)obj;
-            if (tmp.containsKey("clientPass"))
-              this.clientPass = tmp.getString("clientPass");
+            if (tmp.containsKey("msg"))
+              this.msg = tmp.getBoolean("msg");
             else
-              throw new InvalidObjectException("Expected an Ticket object -- clientPass expected.");
-            if (tmp.containsKey("user"))
-              this.user = tmp.getString("user");
-            else
-              throw new InvalidObjectException("Expected an Ticket object -- user expected.");
+              throw new InvalidObjectException("Expected an Ticket object -- msg expected.");
           }
           else 
             throw new InvalidObjectException("Expected a Ticket - Type JSONObject not found.");
@@ -101,8 +85,7 @@ public class AuthnPass implements Packet, JSONSerializable {
     public JSONType toJSONType() {
         JSONObject object = new JSONObject();
         object.put("packetType", PACKET_TYPE.toString());
-        object.put("clientPass", this.clientPass);
-        object.put("user", this.user);
+        object.put("msg", this.msg);
 
         return object;
     }
@@ -135,7 +118,7 @@ public class AuthnPass implements Packet, JSONSerializable {
              JSONObject jsonObject = JsonIO.readObject(packet); // String to JSONObject
              deserialize(jsonObject); // Deserialize jsonObject
         } catch (InvalidObjectException ex) {
-            Logger.getLogger(CreateChallenge.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PassResponse.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
@@ -148,5 +131,5 @@ public class AuthnPass implements Packet, JSONSerializable {
     public PacketType getType() {
         return PACKET_TYPE;
     }
-    
-} 
+}
+

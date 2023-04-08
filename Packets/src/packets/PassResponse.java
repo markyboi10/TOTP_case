@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package packets;
 
 import java.io.InvalidObjectException;
@@ -39,6 +35,7 @@ public class PassResponse implements Packet, JSONSerializable {
     /**
      * Converts a JSONObject into a ticket object
      * @param packet byte[] of information representing this packet
+     * @param packetType
      * @throws InvalidObjectException Thrown if {@code object} is not a Ticket JSONObject
      */
     public PassResponse(String packet, PacketType packetType) throws InvalidObjectException {
@@ -61,7 +58,7 @@ public class PassResponse implements Packet, JSONSerializable {
     /**
      * Converts a JSON type to this object
      * Converts types of Byte[] into strings for travel
-     * @param jsont
+     * @param obj
      * @throws InvalidObjectException 
      */
     @Override

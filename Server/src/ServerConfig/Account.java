@@ -1,14 +1,9 @@
 package ServerConfig;
 
-import java.io.IOException;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
 import merrimackutil.json.JSONSerializable;
 import java.io.InvalidObjectException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import merrimackutil.json.types.JSONArray;
 
 /**
  * This class represents an account record for the password manager. This
@@ -24,6 +19,7 @@ public class Account implements JSONSerializable {
     /**
      * Constructs a new Account from the given JSON object.
      *
+     * @param obj
      * @throws InvalidObjectException if the object is not a proper Account
      * object.
      */
@@ -34,10 +30,10 @@ public class Account implements JSONSerializable {
     /**
      * Construct a new Account.
      *
-     * @param url the URL for the site.
+     * @param salt
      * @param user the user name for the account.
+     * @param totp_key
      * @param pass the encrypted password associated with the account.
-     * @param iv the base 64 encoded representation of the iv.
      */
     public Account(String salt, String pass, String totp_key, String user) {
         this.salt = salt;
