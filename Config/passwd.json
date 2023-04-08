@@ -1,8 +1,8 @@
 {
    "entries" : [
       {
-         "salt" : "eYvyYjOEq7pn9XayrYnN+w==",
-         "pass" : "EnS7y7TFABdCw3Phou8quQ==",
+         "salt" : "yE73LeAklfn6ILsgGWfexg==",
+         "pass" : "yE73LeAklfn6ILsgGWfexg==",
          "totp-key" : "bdBbsg97DtC+L95pk0OQh3ZHrW0Mreo9ds+HNA5laXlTjBpRR2F3HCl46x6OAdoCF69jSqNsDePpAb/a468x2g==",
          "user" : "alice"
       }

@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import packets.AuthnHello;
+import packets.AuthnPass;
 import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.Packet;
@@ -92,6 +93,7 @@ public class Comm {
             case CreateChallenge: return new CreateChallenge(line, packetType);
             case CreateResponse: return new CreateResponse(line, packetType);
             case SendKey: return new SendKey(line, packetType);
+            case AuthnPass: return new AuthnPass(line, packetType);
             default: return null;
         }    
         

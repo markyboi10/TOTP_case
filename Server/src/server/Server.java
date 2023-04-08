@@ -27,6 +27,7 @@ import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
+import packets.AuthnPass;
 import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.Packet;
@@ -120,17 +121,21 @@ public class Server {
 
                     AuthnHello AuthnHello_packet = (AuthnHello) packet;
 
+                    // Authn
                     if (passwd.stream().anyMatch(n -> n.getUser().equalsIgnoreCase(AuthnHello_packet.getuName())) && authenticate.equalsIgnoreCase(AuthnHello_packet.getAccType())) { //user exists and type authn
                         // Confirm auth and create are seperate
                         System.out.println("Authn_packet received, here is the type: " + AuthnHello_packet.getAccType());
                         System.out.println("Authn_packet received, here is the username: " + AuthnHello_packet.getuName());
-
+                        String createPassRequest = ("Enter your password:");
+                        CreateChallenge createChallenge_packet = new CreateChallenge(createPassRequest);
+                        Comm.send(peer, createChallenge_packet);                              
+                    // Create
                     } else if (passwd.stream().noneMatch(n -> n.getUser().equalsIgnoreCase(AuthnHello_packet.getuName())) && create.equalsIgnoreCase(AuthnHello_packet.getAccType())) { // user doesn't exist and type create
                         // Confirm auth and create are seperate
                         System.out.println("Authn_packet received, here is the type: " + AuthnHello_packet.getAccType());
                         System.out.println("Authn_packet received, here is the username: " + AuthnHello_packet.getuName());
                         // Create the packet and send
-                        String createPassRequest = ("Create your password creation");
+                        String createPassRequest = ("Create your password creation:");
                         // Send out a request for user 
                         CreateChallenge createChallenge_packet = new CreateChallenge(createPassRequest);
                         Comm.send(peer, createChallenge_packet);
@@ -190,6 +195,52 @@ public class Server {
                 }
                 ;
                 break;
+                
+                case AuthnPass: {
+                    //SHA 256 hash function
+                    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                    
+                    boolean status = false;
+                    
+                    AuthnPass authnPass_packet = (AuthnPass) packet;
+                    String userIs = authnPass_packet.getUser();
+                    String passIs = authnPass_packet.getclientPass();
+                    
+                    byte[] preHashClientPassBytes = Base64.getDecoder().decode(passIs);
+                    byte[] hashedClientPassBytes = digest.digest(preHashClientPassBytes);
+                    // String for of hashed pw
+                    String hashedClientPassString = Base64.getEncoder().encodeToString(hashedClientPassBytes);
+                    // Run scrypt
+                    SecretKey key = Scrypt.genKey(hashedClientPassString, userIs);
+                    // Convert returned key into a string form
+                    String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
+                    // Grab salt
+                    byte[] saltBytes = Scrypt.getSalt();
+                    String saltString = Base64.getEncoder().encodeToString(saltBytes);
+
+                    
+                    if (passwd.stream().anyMatch(secret -> {
+                        // byte array and combine the two like the client did when they sent their challenge response
+                        String databasePass = secret.getPass();
+
+                        System.out.println(databasePass);
+                        System.out.println(encodedKey);
+                        
+                            // Compare the final hash with the received hash
+                            System.out.println(databasePass.equalsIgnoreCase(encodedKey));
+                        return databasePass.equalsIgnoreCase(encodedKey);
+                    })) {
+                        // If valid password, boolean is true 
+                        status = true;
+                        System.out.println("SUCCESS");
+                    } else {
+                        // If invalid password, boolean remains false
+                        // Create the packet and send
+                        System.out.println("FAILURE");
+
+                    }
+                }
+            
             }
         }
     }

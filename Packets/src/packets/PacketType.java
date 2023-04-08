@@ -12,7 +12,8 @@ public enum PacketType {
       AuthnHello(packets.AuthnHello.class),
       CreateChallenge(packets.CreateChallenge.class),
       CreateResponse(packets.CreateResponse.class),
-      SendKey(packets.SendKey.class)
+      SendKey(packets.SendKey.class),
+      AuthnPass(packets.AuthnPass.class)
       ;
 
       

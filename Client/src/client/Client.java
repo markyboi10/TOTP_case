@@ -21,6 +21,7 @@ import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
 import packets.AuthnHello;
+import packets.AuthnPass;
 import packets.CreateChallenge;
 import packets.CreateResponse;
 import packets.SendKey;
@@ -136,8 +137,23 @@ public class Client {
         // MESSAGE 1: Send server request to authenticate
         AuthnHello hello = new AuthnHello(user, "authenticate"); // Construct the packet
         System.out.println("Sending hello packet");
-        Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
+        Socket s1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
 
+        // MESSAGE 2: Read in packet from server, extracts msg for password
+        CreateChallenge createChallenge_Packet = (CreateChallenge) Comm.read(s1); // 
+        String receivedcreatePassRequest = createChallenge_Packet.getcreatePassRequest();
+        
+        // MESSAGE 3: Send server p.t. password
+        Console console = System.console();
+        pw = new String(console.readPassword("Enter your Password: "));
+
+        System.out.println("The password: " + pw);
+        System.out.println("Password Created");
+
+        AuthnPass authnPass_packet = new AuthnPass(pw, user); //send pw and username off
+        Socket s2 = Comm.connectAndSend(host.getAddress(), host.getPort(), authnPass_packet);
+        
+        
         return AuthnStatus;
 
     }
@@ -170,9 +186,9 @@ public class Client {
         System.out.println("Password Created");
 
         CreateResponse createResponse_packet = new CreateResponse(pw, user); //send pw and username off
+        Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
         
         // MESSAGE 4: Receive base32 totp key and print it out
-        Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
         SendKey sendKey_Packet = (SendKey) Comm.read(peer2);
         String key = sendKey_Packet.getKey();
         System.out.println("Base32 key: " + key);
