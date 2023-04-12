@@ -1,6 +1,7 @@
 package server;
 
 import ClientSideCrypto.Scrypt;
+import ClientSideCrypto.confirmScrypt;
 import Comm.Comm;
 import ServerConfig.Config;
 import ServerConfig.Password;
@@ -228,8 +229,19 @@ public class Server {
                     byte[] hashedClientPassBytes = digest.digest(preHashClientPassBytes);
                     // String for of hashed pw
                     String hashedClientPassString = Base64.getEncoder().encodeToString(hashedClientPassBytes);
+                    
+                    String salty = null;
+                    for (Password salt : passwd) {
+                        if (salt.getUser().equalsIgnoreCase(userIs)) {
+
+                            salty = salt.getSalt();
+
+                            break;
+                        }
+                    }
+
                     // Run scrypt
-                    SecretKey key = Scrypt.genKey(hashedClientPassString, userIs);
+                    SecretKey key = confirmScrypt.genKey(hashedClientPassString, salty);
                     // Convert returned key into a string form
                     String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
 
