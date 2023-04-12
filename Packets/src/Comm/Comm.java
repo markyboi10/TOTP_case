@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import packets.AuthnHello;
@@ -26,7 +28,6 @@ import packets.SendTOTP;
  * @author Alex Elguezabal
  */
 public class Comm {
-    
     /**
      * Used to send a message to a socket {@code peer}
      * @param peer
@@ -38,6 +39,8 @@ public class Comm {
         peer.getOutputStream().flush(); // Flush after each message
     }
     
+    private static final SSLSocketFactory fac = (SSLSocketFactory)SSLSocketFactory.getDefault();
+    
     /**
      * Connects to a socket and sends a packet
      * Used for client-side messaging where we are sending single message instances.
@@ -46,11 +49,22 @@ public class Comm {
      * @param port Port to connect too on the server
      * @param messgae Packet to be sent
      */
-    public static Socket connectAndSend(String address, int port, Packet messgae) throws IOException {
-        Socket peerSocket = null;
+    public static SSLSocket connectAndSend(String address, int port, Packet messgae) throws IOException {
+        
+        // This method will only ever be called from a client
+        // Set the trust store properties.
+        
+        // Create an SSL socket.
+        SSLSocket peerSocket = null;
+    
         try {
-            // Set up a connection to the echo server running on the same machine.
-            peerSocket = new Socket(address, port);
+            // Set up a secure connection to the echo server running on the same machine.
+            peerSocket = (SSLSocket) fac.createSocket(address, port);
+            // Requires JDK 11 or higher.
+            peerSocket.setEnabledProtocols(new String[]{"TLSv1.3"});
+
+            // Start up the SSL handshake.
+            peerSocket.startHandshake();
             System.out.println("Connecting to : "+address+":" + port);
         } catch (UnknownHostException ex) {
             System.out.println("Host ["+address+" "+port+"] connected could not be established.");
@@ -62,6 +76,7 @@ public class Comm {
         send(peerSocket, messgae);
         return peerSocket;
     }
+    
     
     /**
      * Used to reed a message from a socket {@code peer}

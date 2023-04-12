@@ -4,6 +4,7 @@ import ClientConfig.Config;
 import ClientConfig.Host;
 import Comm.Comm;
 import java.io.Console;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -18,6 +19,7 @@ import java.util.Scanner;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.net.ssl.SSLSocket;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
@@ -43,7 +45,7 @@ public class Client {
     private static String service;
 
     public static void main(String[] args) throws NoSuchAlgorithmException, FileNotFoundException, InvalidObjectException, IOException, NoSuchMethodException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-
+        
         // Initializing the CLI
         boolean shortlen = false;
 
@@ -93,6 +95,10 @@ public class Client {
             }
         }
 
+        System.out.println("File "+ "Config/truststore.jks" + " exists [" + new File("Config/truststore.jks").exists()+"]");
+        
+        System.setProperty("javax.net.ssl.trustStore", ImportServerConfig.getTrustStore_file());
+        System.setProperty("javax.net.ssl.trustStorePassword", ImportServerConfig.getTrustStore_pass());
         // Check the service type and operate such.
         if (service.equalsIgnoreCase("authenticate")) { // KDC --> EchoService
 
@@ -126,7 +132,7 @@ public class Client {
 
         // MESSAGE 1: Send server request to authenticate
         AuthnHello hello = new AuthnHello(user, "authenticate"); // Construct the packet
-        Socket s1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
+        SSLSocket s1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
 
         // MESSAGE 2: Read in packet from server, extracts msg for password
         CreateChallenge createChallenge_Packet = (CreateChallenge) Comm.read(s1); // 
@@ -137,14 +143,14 @@ public class Client {
         pw = new String(console.readPassword("Enter your Password: "));
 
         AuthnPass authnPass_packet = new AuthnPass(pw, user); //send pw and username off
-        Socket s2 = Comm.connectAndSend(host.getAddress(), host.getPort(), authnPass_packet);
+        SSLSocket s2 = Comm.connectAndSend(host.getAddress(), host.getPort(), authnPass_packet);
 
         // MESSAGE 3: Receive status and extract outcome
         PassResponse passResp = (PassResponse) Comm.read(s2);
         Scanner scanner = new Scanner(System.in);
         String totp;
         boolean status = passResp.getMsg();
-        Socket s3 = null;   
+        SSLSocket s3 = null;   
         if (status) {
             // MESSAGE 3: Send server totp password
             System.out.print("Enter your TOTP: ");
@@ -178,7 +184,7 @@ public class Client {
 
         // MESSAGE 1: Send server request to make a new account
         AuthnHello hello = new AuthnHello(user, "create"); // Construct the packet
-        Socket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
+        SSLSocket peer1 = Comm.connectAndSend(host.getAddress(), host.getPort(), hello); // Send the packet
 
 
         // MESSAGE 2: Read in packet from server, extracts msg for password
@@ -191,7 +197,7 @@ public class Client {
         pw = new String(console.readPassword("Create your Password: "));
 
         CreateResponse createResponse_packet = new CreateResponse(pw, user); //send pw and username off
-        Socket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
+        SSLSocket peer2 = Comm.connectAndSend(host.getAddress(), host.getPort(), createResponse_packet);
 
         // MESSAGE 4: Receive base32 totp key and print it out
         SendKey sendKey_Packet = (SendKey) Comm.read(peer2);

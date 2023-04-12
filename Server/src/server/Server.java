@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.codec.Base32;
@@ -47,8 +49,9 @@ import packets.SendTOTP;
  * @author Mark Case
  */
 public class Server {
-
-    private static ServerSocket server;
+    private static SSLServerSocketFactory sslFact;
+    private static SSLServerSocket server;
+    //private static ServerSocket server;
     private static Config config;
     private static PasswordConfig passwordConfig;
     public static ArrayList<Password> passwd = new ArrayList<>();
@@ -89,9 +92,21 @@ public class Server {
         }
 
         try {
+            
+             System.out.println("File "+ "Config/keystore.jks" + " exists [" + new File("Config/keystore.jks").exists()+"]");
+             
+            // Set the keystore and keystore password.
+            System.setProperty("javax.net.ssl.keyStore", config.getKeyStore_file());
+            System.setProperty("javax.net.ssl.keyStorePassword", config.getPassword_file());
             // Initializie the server with the config port
-            server = new ServerSocket(config.getPort());
+            //server = new ServerSocket(config.getPort());
+            sslFact = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
+            // Set up the server socket using the specified port number.
+            server = (SSLServerSocket) sslFact.createServerSocket(5000);
+
+            // Set the protocol to 1.3
+            server.setEnabledProtocols(new String[]{"TLSv1.3"});
             // Accept packets & communicate
             poll();
 
