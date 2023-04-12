@@ -49,6 +49,7 @@ import packets.SendTOTP;
  * @author Mark Case
  */
 public class Server {
+
     private static SSLServerSocketFactory sslFact;
     private static SSLServerSocket server;
     //private static ServerSocket server;
@@ -92,9 +93,6 @@ public class Server {
         }
 
         try {
-            
-             System.out.println("File "+ "Config/keystore.jks" + " exists [" + new File("Config/keystore.jks").exists()+"]");
-             System.out.println(config.getKeystore_pass());
             // Set the keystore and keystore password.
             System.setProperty("javax.net.ssl.keyStore", config.getKeyStore_file());
             System.setProperty("javax.net.ssl.keyStorePassword", config.getKeystore_pass());
@@ -103,7 +101,7 @@ public class Server {
             sslFact = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
             // Set up the server socket using the specified port number.
-            server = (SSLServerSocket) sslFact.createServerSocket(5000);
+            server = (SSLServerSocket) sslFact.createServerSocket(config.getPort());
 
             // Set the protocol to 1.3
             server.setEnabledProtocols(new String[]{"TLSv1.3"});

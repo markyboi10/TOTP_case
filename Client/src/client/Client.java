@@ -95,10 +95,10 @@ public class Client {
             }
         }
 
-        System.out.println("File "+ "Config/truststore.jks" + " exists [" + new File("ClientConfig/truststore.jks").exists()+"]");
+       // System.out.println("File "+ "Config/truststore.jks" + " exists [" + new File("ClientConfig/mytruststore.jks").exists()+"]");
 
-        System.setProperty("javax.net.ssl.trustStore", "ClientConfig/truststore.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "test12345");
+        System.setProperty("javax.net.ssl.trustStore", "ClientConfig/myTruststore.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "dasSicheresteSchluesselUfDaeGanzeWaelt");
         // Check the service type and operate such.
         if (service.equalsIgnoreCase("authenticate")) { // KDC --> EchoService
 

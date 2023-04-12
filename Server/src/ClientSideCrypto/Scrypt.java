@@ -2,6 +2,7 @@ package ClientSideCrypto;
 
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
 import javax.crypto.SecretKey;
@@ -38,7 +39,11 @@ public class Scrypt {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("SCRYPT");
 
         // Get a 16-byte IV for an AES key if it does not exist.
-        salt = uname.getBytes(StandardCharsets.UTF_8);
+        // Get a 16-byte IV for an AES key
+        SecureRandom rand = new SecureRandom();
+        salt = new byte[16]; // 128-bit salt
+        rand.nextBytes(salt);
+//        salt = uname.getBytes(StandardCharsets.UTF_8);
 
         scryptSpec = new ScryptKeySpec(password.toCharArray(), salt, COST, BLK_SIZE,
                 PARALLELIZATION, KEY_SIZE);

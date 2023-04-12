@@ -1,6 +1,6 @@
 {
   "password-file":"Config/passwd.json",
   "port":5000,
-  "keystore-file":"Config/keystore.jks",
-  "keystore-pass":"test12345"
+  "keystore-file":"Config/myKeystore.jks",
+  "keystore-pass":"schluesselIstSicher"
 }
