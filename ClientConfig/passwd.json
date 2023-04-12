@@ -1,0 +1,29 @@
+{
+   "entries" : [
+      {
+         "salt" : "yE73LeAklfn6ILsgGWfexg==",
+         "pass" : "yE73LeAklfn6ILsgGWfexg==",
+         "totp-key" : "bdBbsg97DtC+L95pk0OQh3ZHrW0Mreo9ds+HNA5laXlTjBpRR2F3HCl46x6OAdoCF69jSqNsDePpAb/a468x2g==",
+         "user" : "alice"
+      },
+      {
+         "salt" : "bWFyaw==",
+         "pass" : "LG/xFYqg+2UURJvbNynzQw==",
+         "totp-key" : "3X6AGfm03rqQAwa/sKiwu1W1Fn9R/q/43HFQKUIEWhk=",
+         "user" : "mark"
+      },
+      {
+         "salt" : "ZGF2aWQ=",
+         "pass" : "tGLp5I1aodbj56S57kYZCQ==",
+         "totp-key" : "6Bikc4YT8R0=",
+         "user" : "david"
+      },
+      {
+         "salt" : "cnlhbg==",
+         "pass" : "wC+bS/lYbH4zwfW8U+dMHg==",
+         "totp-key" : "6L5nYD/ty9+UMXzZcf8x6A==",
+         "user" : "ryan"
+      }
+   ]
+}
+

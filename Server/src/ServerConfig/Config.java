@@ -70,7 +70,7 @@ public class Config implements JSONSerializable {
         }
 
         if (obj.containsKey("keystore-file")) {
-            this.keystore_pass = obj.getString("keystore-file");
+            this.keyStore_file = obj.getString("keystore-file");
         } else {
             throw new InvalidObjectException("Expected an Config object -- keystore-file expected.");
         }

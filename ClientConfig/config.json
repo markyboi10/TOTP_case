@@ -1,0 +1,6 @@
+{
+  "password-file":"Config/passwd.json",
+  "port":5000,
+  "trustStore-files":"Config/keystore.jks",
+  "trustStore-pass":"test12345"
+}

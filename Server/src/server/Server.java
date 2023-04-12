@@ -94,10 +94,10 @@ public class Server {
         try {
             
              System.out.println("File "+ "Config/keystore.jks" + " exists [" + new File("Config/keystore.jks").exists()+"]");
-             
+             System.out.println(config.getKeystore_pass());
             // Set the keystore and keystore password.
             System.setProperty("javax.net.ssl.keyStore", config.getKeyStore_file());
-            System.setProperty("javax.net.ssl.keyStorePassword", config.getPassword_file());
+            System.setProperty("javax.net.ssl.keyStorePassword", config.getKeystore_pass());
             // Initializie the server with the config port
             //server = new ServerSocket(config.getPort());
             sslFact = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
@@ -195,7 +195,7 @@ public class Server {
                     String saltString = Base64.getEncoder().encodeToString(saltBytes);
 
                     // Create totp key and dervied base32 version
-                    byte[] secretKey = new byte[16];
+                    byte[] secretKey = new byte[64];
                     SecureRandom secureRandom = new SecureRandom();
                     secureRandom.nextBytes(secretKey);
                     //String totp key
